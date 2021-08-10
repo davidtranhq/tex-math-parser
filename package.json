@@ -1,0 +1,47 @@
+{
+  "name": "tex-math-parser",
+  "version": "1.0.3",
+  "description": "A TeX math parser that can evaluate TeX math and convert it into a MathJS expression tree.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidtranhq/tex-math-parser.git"
+  },
+  "scripts": {
+    "start": "tsc --watch",
+    "lint": "npx eslint"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "keywords": [
+    "tex",
+    "latex",
+    "math",
+    "parse",
+    "parser",
+    "mathquill",
+    "mathjs",
+    "math",
+    "evaluate"
+  ],
+  "author": "David Tran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidtranhq/tex-math-parser/issues"
+  },
+  "homepage": "https://github.com/davidtranhq/tex-math-parser#readme",
+  "dependencies": {
+    "mathjs": "^9.4.4"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.28.5",
+    "@typescript-eslint/parser": "^4.28.5",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-plugin-import": "^2.23.4",
+    "typescript": "^4.3.5"
+  }
+}
