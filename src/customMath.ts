@@ -1,40 +1,23 @@
 import { create, all, MathJsStatic } from 'mathjs';
 
+// use BigNumber to reduce floating-point rounding errors
 const math = create(all, {
   number: 'BigNumber',
-  precision: 32,
+  precision: 12,
 }) as MathJsStatic;
 
-const originalDet = math.det;
-
-const customFns = {
-  eigenvalues: (matrix: math.Matrix) => {
-    const result = math.eigs(matrix).values as any;
-    result.subtype = 'Eigenvalues';
-    result.previous = matrix;
-    return result;
-  },
-  eigenvectors: (matrix: math.Matrix) => {
-    const result = math.eigs(matrix).vectors as any;
-    result.subtype = 'Eigenvectors';
-    result.previous = matrix;
-    return result;
-  },
-  det: (matrix: math.Matrix) => {
-    const result = originalDet(matrix) as any;
-    result.subtype = 'Determinant';
-    result.previous = matrix;
-    return result;
-  },
+// Additional functions to be passed to the scope of math.evaluate(scope)
+// (not defined in mathjs)
+const mathImport = {
+  lastFn: '',
+  lastArgs: [],
+  eigenvalues: (matrix: any) => math.eigs(matrix).values,
+  eigenvectors: (matrix: any) => math.eigs(matrix).vectors,
 };
 
-const importOptions = {
+math.import(mathImport, {
   override: true,
-  silent: false,
-  wrap: false,
-};
-
-math.import(customFns, importOptions);
+});
 
 // hacky way to disable unit parsing
 // https://github.com/josdejong/mathjs/issues/1220

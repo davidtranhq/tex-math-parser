@@ -1,4 +1,5 @@
 import math from './customMath';
+import lastFunctionNode from './lastFunctionNode';
 import tokenizeTex from './tokenizeTex';
 import parseTokens from './parseTokens';
 
@@ -7,22 +8,20 @@ type Scope = { [key: string]: any };
 
 /**
  * Parse a TeX math string into a MathJS expression tree.
- * @returns Returns the root node of a MathJS expression tree.
+ * @returns Returns an object containing the root node of a MathJS expression tree
+ *          and variables that need to be defined.
  */
-function parseTex(texStr: string): math.MathNode {
+function parseTex(texStr: string) {
   return parseTokens(tokenizeTex(texStr));
 }
 
 /**
  * Evaluate a TeX math string, returning the result as a MathJS MathType.
  */
-function evaluateTex(texStr: string, scope: Scope = {}) {
-  const modifiedScope = scope;
-  const evaluated = parseTex(texStr).evaluate(modifiedScope);
-  return {
-    evaluated,
-    scope: modifiedScope,
-  };
+function evaluateTex(texStr: string, scope: Scope) {
+  const root = parseTex(texStr);
+  const evaluated = root.evaluate(scope);
+  return { evaluated, scope };
 }
 
 /**
