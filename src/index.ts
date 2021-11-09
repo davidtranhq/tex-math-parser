@@ -41,7 +41,6 @@ function evaluateTexToJS(texStr: string, scope: Scope = {}) {
     return math.abs(val) < Number.EPSILON ? 0 : val;
   }
   const formatted = math.format(fixRoundingError(evaluated), { precision: 12 });
-  const type: string = typeof evaluated.type === 'string' ? evaluated.type : '';
   return {
     evaluated: formatted,
     scope: modifiedScope,

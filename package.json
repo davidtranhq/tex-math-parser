@@ -7,7 +7,7 @@
     "url": "git+https://github.com/davidtranhq/tex-math-parser.git"
   },
   "scripts": {
-    "start": "tsc --watch",
+    "start": "npx patch-package && tsc --watch",
     "lint": "npx eslint"
   },
   "main": "dist/index.js",
@@ -33,7 +33,9 @@
   },
   "homepage": "https://github.com/davidtranhq/tex-math-parser#readme",
   "dependencies": {
-    "mathjs": "^9.4.4"
+    "mathjs": "^9.4.4",
+    "matrix-eig": "^1.0.0",
+    "patch-package": "^6.4.7"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.5",

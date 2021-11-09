@@ -9,6 +9,8 @@ import Token, { TokenType, typeToOperation, lexemeToType } from './Token';
 function createMathJSNode(token: Token, children: math.MathNode[] = []): math.MathNode {
   let fn = typeToOperation[token.type];
   switch (token.type) {
+    case TokenType.Times:
+      return new (math as any).FunctionNode('cross', children);
     case TokenType.Minus:
       // mathjs differentiates between subtraction and the unary minus
       fn = children.length === 1 ? 'unaryMinus' : fn;
@@ -28,8 +30,8 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
       }
       return new (math as any).OperatorNode(token.lexeme, fn, children);
     // mathjs built-in functions
-    case TokenType.Sqrt:
     case TokenType.Bar:
+    case TokenType.Sqrt:
     case TokenType.Sin:
     case TokenType.Cos:
     case TokenType.Tan:
@@ -45,6 +47,10 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Eigenvectors:
     case TokenType.Det:
     case TokenType.Cross:
+    case TokenType.Proj:
+    case TokenType.Comp:
+    case TokenType.Norm:
+    case TokenType.Inv:
       return new (math as any).FunctionNode(fn, children);
     case TokenType.Equals:
       return new (math as any).AssignmentNode(children[0], children[1]);
@@ -56,9 +62,9 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
       return new (math as any).ConstantNode(constant);
     }
     case TokenType.Pi:
-      return new (math as any).ConstantNode(math.bignumber(math.pi));
+      return new (math as any).SymbolNode('pi');
     case TokenType.E:
-      return new (math as any).ConstantNode(math.bignumber(math.e));
+      return new (math as any).SymbolNode('e');
     case TokenType.Matrix:
       return new (math as any).ArrayNode(children);
     case TokenType.T:
@@ -226,7 +232,7 @@ class Parser {
   /**
      * Consume the next term according to the following production:
      *
-     * term => factor ((STAR factor) | power)*
+     * term => factor (((STAR | TIMES) factor) | power)*
      * @returns Returns the root node of an expression tree.
      */
   nextTerm(): math.MathNode {
@@ -240,7 +246,12 @@ class Parser {
     // However, if more environnment support is added, it would be necessary to
     // have more lookahead and ensure that the matrix begins with BEGIN LBRACE MATRIX.
     for (;;) {
-      const lookaheadType = this.match(TokenType.Star, TokenType.Slash, ...primaryTypes);
+      const lookaheadType = this.match(
+        TokenType.Star,
+        TokenType.Times,
+        TokenType.Slash,
+        ...primaryTypes,
+      );
       if (lookaheadType === undefined) {
         break;
       }
@@ -251,7 +262,7 @@ class Parser {
       if (isNumberNode(leftFactor) && lookaheadType === TokenType.Number) {
         throw new ParseError('multiplication is not implicit between two different'
                     + 'numbers: expected * or \\cdot', this.currentToken());
-      } else if (this.match(TokenType.Star, TokenType.Slash)) {
+      } else if (this.match(TokenType.Star, TokenType.Times, TokenType.Slash)) {
         operator = this.nextToken();
         rightFactor = this.nextFactor();
       } else {
@@ -339,7 +350,10 @@ class Parser {
       case TokenType.Lparen:
       case TokenType.Lbrace:
       case TokenType.Bar:
-        primary = this.nextGrouping();
+        // nextGrouping can return an array of children
+        // (if the grouping contains comma-seperated values, e.g. for a multi-value function),
+        // so for a primary, we only take the first value (or if there is just one, the only value)
+        [primary] = this.nextGrouping();
         break;
       case TokenType.Number:
       case TokenType.Variable:
@@ -392,20 +406,29 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextGrouping(): math.MathNode {
-    // flag indicating if grouping tokens are marked with \left and \right
-    let leftRight = false;
+  nextGrouping(): math.MathNode[] {
+    // token indicating start of grouping
+    let leftRight = false; // flag indicating if grouping tokens are marked with \left and \right
     if (this.match(TokenType.Left)) {
       leftRight = true;
       this.nextToken(); // consume \left
     }
-    const leftGrouping = this.tryConsume("expected '(', '|', '{'",
+    const leftGrouping = this.tryConsume("expected '(', '|',",
       TokenType.Lparen,
-      TokenType.Bar,
-      TokenType.Lbrace);
+      TokenType.Bar);
     let grouping = this.nextExpression();
+    // a grouping can contain multiple children if the
+    // grouping is parenthetical and the values are comma-seperated
+    const children: math.MathNode[] = [grouping];
+    if (leftGrouping.type === TokenType.Lparen) {
+      while (this.match(TokenType.Comma)) {
+        this.nextToken(); // consume comma
+        children.push(this.nextExpression());
+      }
+    }
     if (leftGrouping.type === TokenType.Bar) {
-      // absolute value
+      // grouping with bars |x| also applies a function, so we create the corresponding function
+      // here
       grouping = createMathJSNode(leftGrouping, [grouping]);
     }
     if (leftRight) {
@@ -414,7 +437,7 @@ class Parser {
     }
     // look for corresponding right grouping
     this.tryConsumeRightGrouping(leftGrouping);
-    return grouping;
+    return children;
   }
 
   /**
@@ -425,7 +448,7 @@ class Parser {
   nextUnaryFunc(): math.MathNode {
     const func = this.nextToken();
     const argument = this.nextArgument();
-    return createMathJSNode(func, [argument]);
+    return createMathJSNode(func, argument);
   }
 
   /**
@@ -440,18 +463,18 @@ class Parser {
     const customFunc = this.nextToken();
     this.tryConsume("expected '}' after operator name", TokenType.Rbrace);
     const argument = this.nextArgument();
-    return createMathJSNode(customFunc, [argument]);
+    return createMathJSNode(customFunc, argument);
   }
 
   /**
-     * Consume the next argument according to the following production:
+     * Consume the next group of arguments according to the following production:
      *
      * argument => grouping
      *           | expr
      *
      * @returns The root node of an expression tree.
      */
-  nextArgument(): math.MathNode {
+  nextArgument(): math.MathNode[] {
     let argument;
     // try to match grouping e.g. (), {}, ||
     if (this.match(TokenType.Left,
@@ -462,7 +485,7 @@ class Parser {
       argument = this.nextGrouping();
     } else {
       // no grouping e.g. \sin x; consume the next token as the argument
-      argument = this.nextPrimary();
+      argument = [this.nextPrimary()];
     }
     return argument;
   }

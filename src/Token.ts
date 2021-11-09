@@ -5,8 +5,10 @@ export const enum TokenType {
   Plus,
   Minus,
   Star,
+  Times,
   Slash,
   Caret,
+  Comma,
   Lbrace,
   Rbrace,
   Lparen,
@@ -41,6 +43,11 @@ export const enum TokenType {
   Eigenvalues,
   Eigenvectors,
   Cross,
+  Proj,
+  Comp,
+  Norm,
+  Inv,
+  Space, // ignored by the lexer
 }
 
 export const lexemeToType: { [key: string]: TokenType } = {
@@ -49,8 +56,10 @@ export const lexemeToType: { [key: string]: TokenType } = {
   '-': TokenType.Minus,
   '*': TokenType.Star,
   '\\cdot': TokenType.Star,
+  '\\times': TokenType.Times,
   '^': TokenType.Caret,
   '/': TokenType.Slash,
+  ',': TokenType.Comma,
   '{': TokenType.Lbrace,
   '}': TokenType.Rbrace,
   '(': TokenType.Lparen,
@@ -84,6 +93,10 @@ export const lexemeToType: { [key: string]: TokenType } = {
   eigenvectors: TokenType.Eigenvectors,
   eigenvalues: TokenType.Eigenvalues,
   cross: TokenType.Cross,
+  proj: TokenType.Proj,
+  comp: TokenType.Comp,
+  norm: TokenType.Norm,
+  inv: TokenType.Inv,
 };
 
 /**
@@ -95,6 +108,7 @@ export const typeToOperation: { [key in TokenType]?: string } = {
   [TokenType.Plus]: 'add',
   [TokenType.Minus]: 'subtract',
   [TokenType.Star]: 'multiply',
+  [TokenType.Times]: 'multiply',
   [TokenType.Caret]: 'pow',
   [TokenType.Slash]: 'divide',
   [TokenType.Frac]: 'divide',
@@ -115,6 +129,10 @@ export const typeToOperation: { [key in TokenType]?: string } = {
   [TokenType.Eigenvectors]: 'eigenvectors',
   [TokenType.Eigenvalues]: 'eigenvalues',
   [TokenType.Cross]: 'cross',
+  [TokenType.Proj]: 'proj',
+  [TokenType.Comp]: 'comp',
+  [TokenType.Norm]: 'norm',
+  [TokenType.Inv]: 'inv',
 };
 
 interface Token {

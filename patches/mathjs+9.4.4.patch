@@ -1,0 +1,21 @@
+diff --git a/node_modules/mathjs/lib/esm/core/function/typed.js b/node_modules/mathjs/lib/esm/core/function/typed.js
+index 2e5fa52..a873039 100644
+--- a/node_modules/mathjs/lib/esm/core/function/typed.js
++++ b/node_modules/mathjs/lib/esm/core/function/typed.js
+@@ -195,9 +195,16 @@ export var createTyped = /* #__PURE__ */factory('typed', dependencies, function
+       } // note: conversion from number to BigNumber can fail if x has >15 digits
+ 
+ 
++      /** PATCH-PACKAGE: MathJS 9.4.4
++       * MathJS complains about implicit promotion to big number, however, when using this library, it won't be possible to specify explicit conversions.
++       * We turn off the exception here, as there is currently no configurable way of doing it otherwise.
++       * https://github.com/josdejong/mathjs/issues/935#issuecomment-325457686
++       */
++      /*
+       if (digits(x) > 15) {
+         throw new TypeError('Cannot implicitly convert a number with >15 significant digits to BigNumber ' + '(value: ' + x + '). ' + 'Use function bignumber(x) to convert to BigNumber.');
+       }
++      */
+ 
+       return new BigNumber(x);
+     }

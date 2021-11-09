@@ -83,10 +83,15 @@ export default function tokenizeTex(texStr: string) {
       lexeme = c;
     } else if (c === '\\') {
       // scan for multi-char lexemes starting with \
-      if (texStr[i + 1] === '\\') {
+      const nextChar = texStr[i + 1];
+      if (nextChar === '\\') {
         // double backslash
         type = TokenType.Dblbackslash;
         lexeme = '\\\\';
+      } else if (nextChar === ' ') {
+        // space character: ignore
+        type = TokenType.Space;
+        lexeme = '\\ ';
       } else {
         // TeX command
         const command = scanWord(texStr, i + 1);
@@ -132,7 +137,10 @@ export default function tokenizeTex(texStr: string) {
     } else {
       throw new LexError(`unrecognized character "${c}"`, i);
     }
-    tokens.push(new Token(lexeme, type, i));
+    // ignore space characters
+    if (type !== TokenType.Space) {
+      tokens.push(new Token(lexeme, type, i));
+    }
     i += lexeme.length;
   }
   tokens.push(new Token('EOF', TokenType.Eof, i));
