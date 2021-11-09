@@ -25,7 +25,7 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
         throw new ParseError('Expected two children for ^ operator', token);
       }
       // manually check for ^T as the transpose operation
-      if (children[1].isSymbolNode && children[1].value === 'T') {
+      if (children[1].isSymbolNode && children[1].name === 'T') {
         return new (math as any).FunctionNode('transpose', [children[0]]);
       }
       return new (math as any).OperatorNode(token.lexeme, fn, children);
