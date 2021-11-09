@@ -1,5 +1,3 @@
-import { MathNode } from 'mathjs';
-
 /**
  * Find the last function node to be evaluated in a MathJS expression tree.
  * @param root The root node of a MathJS expression tree
