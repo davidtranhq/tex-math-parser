@@ -45,7 +45,7 @@ Given the following TeX source string:
 Load the package and escape the string:
 
 ```javascript
-import { parseTex, evaluateTex, evaluateTexFormatted } from 'tex-math-parser' // ES6 module
+import { parseTex, evaluateTex } from 'tex-math-parser' // ES6 module
 
 // Make sure to escape the string!
 const escapedTex = String.raw`\begin{bmatrix}1&3\\2&4\end{bmatrix}\begin{bmatrix}-5\\-6\end{bmatrix}+\left|\sqrt{7}-\sqrt{8}\right|^{\frac{9}{10}}\begin{bmatrix}\cos\left(\frac{\pi}{6}\right)\\\sin\left(\frac{\pi}{6}\right)\end{bmatrix}`; // ES6 raw template string
