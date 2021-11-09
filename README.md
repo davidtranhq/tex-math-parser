@@ -7,10 +7,13 @@ This library works well as a bridge between [MathQuill](http://mathquill.com/) a
 ## TeX Features
 
 * Common operators available in TeX math mode: `+`, `-`, `*`, `^`, `/`, `\cdot`
-* Basic functions: `\sqrt`, `\frac`, `\sin`, `\cos`, `\tan`, `\csc`, `\sec`, `\cot`, `\arcsin`, `\arccos`, `\arctan`, `\log`, `\ln`
+* Basic functions: `\sqrt`, `\frac`, `\sin`, `\cos`, `\tan`, `\csc`, `\sec`, `\cot`, `\arcsin`, `\arccos`, `\arctan`, `\log`, `\ln`, `\det`
+* Custom functions implemented with MathJS: `eigenvectors`, `eigenvalues`, `cross`, `proj`, `comp`, `norm`, `inv`
+    * Since these are custom functions, they should be formatted as `\operatorname{function}` in TeX.
 * Constants: `\pi`, `e`
 * Environnements: `matrix`
 * Variables
+    * `^T` is interpreted as the transpose operation
 
 ## Browser Support
 
@@ -56,16 +59,6 @@ console.log(texAnswer);
 // \begin{bmatrix}-22.812481734548864\\-33.89173627896382\\\end{bmatrix}
 ```
 
-Evaluate the string and get an answer formatted in a human readable format:
-
-```javascript
-const answer = evaluateTexFormatted(escapedTex);
-console.log(answer); 
-// [[-22.812481734548864], [-33.89173627896382]]
-```
-
-
-
 Parse the string and get a [a MathJS expression tree](https://mathjs.org/docs/expressions/expression_trees.html):
 ```javascript
 const mathJSTree = parseTex(escapedTex);
@@ -78,7 +71,7 @@ If the TeX string contains variables, the value of the variables must be supplie
 
 ```javascript
 const texStr = String.raw`\frac{x}{4}+\frac{y}{2}`;
-const answer = evaluateTexFormatted(texStr, {x: 2, y: 1});
+const answer = evaluateTex(texStr, {x: 2, y: 1});
 console.log(answer); // 1
 ```
 
@@ -87,10 +80,6 @@ console.log(answer); // 1
 `evaluateTex(texStr: string, scope: Object)`
 
 Evaluate a TeX string, replacing any variable occurences with their values in `scope`. The answer is returned as a TeX string.
-
-`evaluateTexFormatted(texStr: string, scope: Object)`
-
-Same as `evaluateTex`, but the answer is returned as a human-readable formatted string.
 
 `parseTex(texStr: string)`
 
