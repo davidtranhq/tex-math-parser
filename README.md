@@ -6,12 +6,12 @@ This library works well as a bridge between [MathQuill](http://mathquill.com/) a
 
 ## TeX Features
 
-* Common operators available in TeX math mode: `+`, `-`, `*`, `^`, `/`, `\cdot`
+* Common operators available in TeX math mode: `+`, `-`, `*`, `^`, `/`, `\cdot`, `||` (absolute value), `\times` (cross product)
 * Basic functions: `\sqrt`, `\frac`, `\sin`, `\cos`, `\tan`, `\csc`, `\sec`, `\cot`, `\arcsin`, `\arccos`, `\arctan`, `\log`, `\ln`, `\det`
 * Custom functions implemented with MathJS: `eigenvectors`, `eigenvalues`, `cross`, `proj`, `comp`, `norm`, `inv`
     * Since these are custom functions, they should be formatted as `\operatorname{function}` in TeX.
 * Constants: `\pi`, `e`
-* Environnements: `matrix`
+* Environments: `matrix`
 * Variables
     * `^T` is interpreted as the transpose operation
 
