@@ -1,6 +1,6 @@
 {
   "name": "tex-math-parser",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "A TeX math parser that can evaluate TeX math and convert it into a MathJS expression tree.",
   "repository": {
     "type": "git",
