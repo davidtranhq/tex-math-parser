@@ -87,7 +87,13 @@ Convert a TeX string into [a MathJS expression tree](https://mathjs.org/docs/exp
 
 ## Contributing
 
-Please feel free to make a PR and add any features or refactor any of the code. Both  `tokenizeTex` and the `Parser` are quite messy and could really use a clean-up (maybe someday I'll get around to it...).
+Please feel free to make a PR and add any features, add unit tests, or refactor any of the code. Both  `tokenizeTex` and the `Parser` are quite messy and could really use a clean-up (maybe someday I'll get around to it...).
+
+Run `npm test` to run some unit tests and make sure they're passing!
+
+Adding support for new TeX functions is relatively simple (see [this commit](https://github.com/davidtranhq/tex-math-parser/commit/037f27650b8b44ac45497f4e49a77c2195282a05) for an example)
+
+TODO: include better documentation on how to do this
 
 ## Details
 
