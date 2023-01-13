@@ -38,6 +38,9 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Csc:
     case TokenType.Sec:
     case TokenType.Cot:
+    case TokenType.Sinh:
+    case TokenType.Cosh:
+    case TokenType.Tanh:
     case TokenType.Arcsin:
     case TokenType.Arccos:
     case TokenType.Arctan:
@@ -101,6 +104,9 @@ const primaryTypes = [
   TokenType.Arcsin,
   TokenType.Arccos,
   TokenType.Arctan,
+  TokenType.Sinh,
+  TokenType.Cosh,
+  TokenType.Tanh,
   TokenType.Log,
   TokenType.Ln,
   TokenType.Det,
@@ -372,6 +378,9 @@ class Parser {
       case TokenType.Arcsin:
       case TokenType.Arccos:
       case TokenType.Arctan:
+      case TokenType.Sinh:
+      case TokenType.Cosh:
+      case TokenType.Tanh:
       case TokenType.Log:
       case TokenType.Ln:
       case TokenType.Det:
@@ -413,10 +422,17 @@ class Parser {
       leftRight = true;
       this.nextToken(); // consume \left
     }
-    const leftGrouping = this.tryConsume("expected '(', '|',",
+    const leftGrouping = this.tryConsume("expected '(', '|', '{'",
       TokenType.Lparen,
-      TokenType.Bar);
+      TokenType.Bar,
+      TokenType.Lbrace);
     let grouping = this.nextExpression();
+    
+    if (leftGrouping.type === TokenType.Bar) {
+      // grouping with bars |x| also applies a function, so we create the corresponding function
+      // here
+      grouping = createMathJSNode(leftGrouping, [grouping]);
+    }
     // a grouping can contain multiple children if the
     // grouping is parenthetical and the values are comma-seperated
     const children: math.MathNode[] = [grouping];
@@ -425,11 +441,6 @@ class Parser {
         this.nextToken(); // consume comma
         children.push(this.nextExpression());
       }
-    }
-    if (leftGrouping.type === TokenType.Bar) {
-      // grouping with bars |x| also applies a function, so we create the corresponding function
-      // here
-      grouping = createMathJSNode(leftGrouping, [grouping]);
     }
     if (leftRight) {
       this.tryConsume('expected \\right to match corresponding \\left after expression',

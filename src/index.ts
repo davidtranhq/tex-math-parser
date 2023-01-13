@@ -16,7 +16,7 @@ function parseTex(texStr: string) {
 /**
  * Evaluate a TeX math string, returning the result as a MathJS MathType.
  */
-function evaluateTex(texStr: string, scope: Scope) {
+function evaluateTex(texStr: string, scope?: Scope) {
   const root = parseTex(texStr);
   const evaluated = root.evaluate(scope);
   return { evaluated, scope };
@@ -25,4 +25,5 @@ function evaluateTex(texStr: string, scope: Scope) {
 export {
   parseTex,
   evaluateTex,
+  Scope,
 };
