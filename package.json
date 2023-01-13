@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "npx patch-package && tsc --watch",
+    "postinstall": "patch-package",
     "lint": "npx eslint",
     "test": "npx jest"
   },
