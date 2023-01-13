@@ -77,7 +77,7 @@ console.log(answer); // 1
 
 ## API
 
-`evaluateTex(texStr: string, scope: Object)`
+`evaluateTex(texStr: string, scope?: Object)`
 
 Evaluate a TeX string, replacing any variable occurences with their values in `scope`. The answer is returned as a TeX string.
 
