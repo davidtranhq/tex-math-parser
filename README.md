@@ -85,6 +85,9 @@ Evaluate a TeX string, replacing any variable occurences with their values in `s
 
 Convert a TeX string into [a MathJS expression tree](https://mathjs.org/docs/expressions/expression_trees.html). The function returns the root node of the tree.
 
+## Contributing
+
+Please feel free to make a PR and add any features or refactor any of the code. Both  `tokenizeTex` and the `Parser` are quite messy and could really use a clean-up (maybe someday I'll get around to it...).
 
 ## Details
 
