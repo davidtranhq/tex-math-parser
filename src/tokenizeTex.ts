@@ -122,17 +122,9 @@ export default function tokenizeTex(texStr: string) {
         lexeme = identifier;
         type = lexemeToType[identifier];
       } else {
-        // identifier has no meaning; interpret as a sequence of single-char lexemes
-        const ch = identifier[0];
-        if (ch in lexemeToType) {
-          // single-char alphabetical lexeme
-          lexeme = ch;
-          type = lexemeToType[ch];
-        } else {
-          // unrecognized alphabetical lexeme: treat as variable
-          lexeme = ch;
-          type = TokenType.Variable;
-        }
+        // unrecognized alphabetical lexeme: treat as variable
+        lexeme = identifier;
+        type = TokenType.Variable;
       }
     } else {
       throw new LexError(`unrecognized character "${c}"`, i);
