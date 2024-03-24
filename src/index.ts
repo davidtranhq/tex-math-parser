@@ -18,6 +18,7 @@ function parseTex(texStr: string) {
  */
 function evaluateTex(texStr: string, scope?: Scope) {
   const root = parseTex(texStr);
+  // @ts-ignore
   const evaluated = root.evaluate(scope);
   return { evaluated, scope };
 }
