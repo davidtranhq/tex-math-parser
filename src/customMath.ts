@@ -1,10 +1,10 @@
-import { create, all, MathJsStatic } from 'mathjs';
+import { create, all, MathJsInstance } from 'mathjs';
 
 // use BigNumber to reduce floating-point rounding errors
 const math = create(all, {
   number: 'BigNumber',
   precision: 64,
-}) as MathJsStatic;
+}) as MathJsInstance;
 
 // Additional functions to be passed to the scope of math.evaluate(scope)
 // (not defined in mathjs)
