@@ -11,11 +11,19 @@ const math = create(all, {
 const mathImport = {
   lastFn: '',
   lastArgs: [],
-  eigenvalues: (matrix: any) => math.eigs(matrix).values,
-  eigenvectors: (matrix: any) => math.eigs(matrix).vectors,
-  comp: (a: any, b: any) => math.divide(math.dot(a, b), math.norm(a)), // component of b along a
-  proj: (a: any, b: any) => math.multiply(math.divide(a, math.norm(a)),
-    math.divide(math.dot(a, b), math.norm(a))), // projection of b along a
+  eigenvalues: (matrix: math.MathCollection) => math.eigs(matrix).values,
+  eigenvectors: (matrix: math.MathCollection) => math.eigs(matrix).vectors,
+  comp: (
+    a: math.MathCollection,
+    b: math.MathCollection,
+  ) => math.divide(math.dot(a, b), math.norm(a)), // component of b along a
+  proj: (
+    a: math.MathCollection,
+    b: math.MathCollection,
+  ) => math.multiply(
+    math.divide(a, math.norm(a)),
+    math.divide(math.dot(a, b), math.norm(a)),
+  ), // projection of b along a
 };
 
 math.import(mathImport, {

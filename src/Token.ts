@@ -21,6 +21,8 @@ export const enum TokenType {
   Rbrace,
   Lparen,
   Rparen,
+  Lbracket,
+  Rbracket,
   Bar,
   Amp,
   Dblbackslash,
@@ -89,6 +91,8 @@ export const lexemeToType: { [key: string]: TokenType } = {
   '}': TokenType.Rbrace,
   '(': TokenType.Lparen,
   ')': TokenType.Rparen,
+  '[': TokenType.Lbracket,
+  ']': TokenType.Rbracket,
   '|': TokenType.Bar,
   '&': TokenType.Amp,
   True: TokenType.True,
@@ -249,6 +253,16 @@ export const typeToOperation: { [key in TokenType]?: string } = {
   [TokenType.Comp]: 'comp',
   [TokenType.Norm]: 'norm',
   [TokenType.Inv]: 'inv',
+};
+
+/**
+ * A mapping from a token type to the operation it represents for multiple variables.
+ * The operation is the name of a function in the mathjs namespace,
+ * or of a function to be defined in scope (i.e. in the argument to math.evaluate())
+ */
+export const typeToMultivarOperation: { [key in TokenType]?: string } = {
+  [TokenType.Sqrt]: 'nthRoot',
+  [TokenType.Log]: 'log',
 };
 
 interface Token {

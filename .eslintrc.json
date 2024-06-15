@@ -4,31 +4,45 @@
         "es2021": true,
         "node": true
     },
-    "extends": [
-        "airbnb-typescript/base"
-    ],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "ecmaVersion": 12,
-        "sourceType": "module",
-        "project": ["./tsconfig.json"]
-    },
     "plugins": [
-        "import",
-        "@typescript-eslint"
+        "import"
     ],
     "rules": {
         "no-shadow": "off",
-        "@typescript-eslint/no-shadow": "error",
         "no-redeclare": "off",
-        "@typescript-eslint/no-redeclare": "error",
         "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": "warn",
         "no-plusplus": "off"
     }, 
     "overrides": [
         {
-          "files": ["src/*.ts"]
+            "files": [
+                "src/*.ts",
+                "tests/*.ts"
+            ],
+            "parser": "@typescript-eslint/parser",
+            "parserOptions": {
+                "ecmaVersion": 12,
+                "sourceType": "module",
+                "project": [
+                    "./tsconfig.tooling.json"
+                ]
+            },
+            "plugins": [
+               "import",
+                "@typescript-eslint"
+            ],
+            "extends": [
+                "airbnb-typescript/base"
+            ],
+            "rules": {
+                "no-shadow": "off",
+                "@typescript-eslint/no-shadow": "error",
+                "no-redeclare": "off",
+                "@typescript-eslint/no-redeclare": "error",
+                "no-unused-vars": "off",
+                "@typescript-eslint/no-unused-vars": "warn",
+                "no-plusplus": "off"
+            }
         }
     ]
 }
