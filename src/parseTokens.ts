@@ -1,6 +1,6 @@
 import math from './customMath';
 import ParseError from './ParseError';
-import Token, { TokenType, typeToOperation, lexemeToType } from './Token';
+import Token, { TokenType, typeToOperation, lexemeToType, lexemeToSymbol } from './Token';
 
 /**
  * Create the corresponding MathJS node of a Token and its children.
@@ -66,10 +66,16 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
       const constant = Number.isNaN(Number(token.lexeme)) ? token.lexeme : +token.lexeme;
       return new (math as any).ConstantNode(constant);
     }
-    case TokenType.Pi:
-      return new (math as any).SymbolNode('pi');
+    case TokenType.Symbol:
+      return new (math as any).SymbolNode(lexemeToSymbol[token.lexeme]);
     case TokenType.E:
       return new (math as any).SymbolNode('e');
+    case TokenType.True:
+      return new (math as any).SymbolNode('true');
+    case TokenType.False:
+      return new (math as any).SymbolNode('false');
+    case TokenType.Undefined:
+      return new (math as any).SymbolNode('undefined');
     case TokenType.Matrix:
       return new (math as any).ArrayNode(children);
     case TokenType.T:
@@ -95,6 +101,7 @@ const primaryTypes = [
   TokenType.Bar,
   TokenType.Number,
   TokenType.Variable,
+  TokenType.Symbol,
   TokenType.Frac,
   TokenType.Sqrt,
   TokenType.Sin,
@@ -112,7 +119,8 @@ const primaryTypes = [
   TokenType.Log,
   TokenType.Ln,
   TokenType.Det,
-  TokenType.Pi,
+  TokenType.Mathrm,
+  TokenType.Mathbf,
   TokenType.E,
   TokenType.Begin,
   TokenType.T, // e.g. [[1,2],[3,4]]^T
@@ -386,7 +394,7 @@ class Parser {
         break;
       case TokenType.Number:
       case TokenType.Variable:
-      case TokenType.Pi:
+      case TokenType.Symbol:
       case TokenType.E:
       case TokenType.T:
         primary = createMathJSNode(this.nextToken());
@@ -414,6 +422,14 @@ class Parser {
         break;
       case TokenType.Frac:
         primary = this.nextFrac();
+        break;
+      case TokenType.Mathrm:
+        // booleans are the only currently supported mathrm tag
+        primary = this.nextBoolean();
+        break;
+      case TokenType.Mathbf:
+        // Undefined is the only currently supported mathbf tag
+        primary = this.nextUndefined();
         break;
       case TokenType.Begin:
         // matrix is the only currently supported environnment: if more are added, another
@@ -546,6 +562,40 @@ class Parser {
       denominator = this.nextExpression();
     }
     return createMathJSNode(frac, [numerator, denominator]);
+  }
+
+  /**
+     * Consume the next boolean according to the following production:
+     *
+     * boolean => MATHRM LBRACE (TRUE | FALSE) RBRACE
+     *
+     * @returns The root node of an expression tree.
+     */
+  nextBoolean(): math.MathNode {
+    this.nextToken(); // consume \mathrm
+    this.tryConsume("expected '{' after \\mathrm", TokenType.Lbrace);
+    const stateToken = this.tryConsume("expected 'True' or 'False' after '\\mathrm{' "
+                                            + '(no other expressions'
+                                            + 'are supported yet)', TokenType.True, TokenType.False);
+    this.tryConsume("expected '}' after \\mathrm{" + stateToken.lexeme, TokenType.Rbrace);
+    return createMathJSNode(stateToken);
+  }
+
+  /**
+     * Consume the next undefined according to the following production:
+     *
+     * undefined => MATHBB LBRACE UNDEFINED RBRACE
+     *
+     * @returns The root node of an expression tree.
+     */
+  nextUndefined(): math.MathNode {
+    this.nextToken(); // consume \mathrm
+    this.tryConsume("expected '{' after \\mathbf", TokenType.Lbrace);
+    const stateToken = this.tryConsume("expected '?' after '\\mathbf{' "
+                                            + '(no other expressions'
+                                            + 'are supported yet)', TokenType.Undefined);
+    this.tryConsume("expected '}' after \\mathbf{undefined", TokenType.Rbrace);
+    return createMathJSNode(stateToken);
   }
 
   /**
