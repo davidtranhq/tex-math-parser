@@ -252,7 +252,7 @@ class Parser {
                       TokenType.Lessequal, TokenType.Greater, TokenType.Greaterequal)) {
       // TODO: Convert this to allow chained comparisons (can't be directly done with while loop)
       const operator = this.nextToken();
-      const rightExpr = this.nextTerm();
+      const rightExpr = this.nextExpression();
       leftExpr = createMathJSNode(operator, [leftExpr, rightExpr]);
     }
     return leftExpr
