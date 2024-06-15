@@ -195,6 +195,9 @@ export const lexemeToSymbol: { [key: string]: string } = {
   '\\leq': '<=',
   '\\ge': '>=',
   '\\geq': '>=',
+  // Operators
+  '\\frac': '/',
+  '\\cdot': '*',
   // Other
   '\\i': 'i',
   '\\infty': 'Infinity',
