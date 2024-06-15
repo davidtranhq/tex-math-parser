@@ -40,7 +40,7 @@
   },
   "homepage": "https://github.com/davidtranhq/tex-math-parser#readme",
   "dependencies": {
-    "mathjs": "^9.4.4",
+    "mathjs": "^10.6.4",
     "matrix-eig": "^1.0.0",
     "patch-package": "^6.4.7"
   },

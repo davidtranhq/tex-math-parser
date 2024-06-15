@@ -82,7 +82,7 @@ export const lexemeToType: { [key: string]: TokenType } = {
   '\\cdot': TokenType.Star,
   '\\times': TokenType.Times,
   '^': TokenType.Caret,
-  '_': TokenType.Underscore,
+  _: TokenType.Underscore,
   '/': TokenType.Slash,
   ',': TokenType.Comma,
   '{': TokenType.Lbrace,
@@ -202,7 +202,7 @@ export const lexemeToSymbol: { [key: string]: string } = {
   '\\i': 'i',
   '\\infty': 'Infinity',
   '\\lim': 'lim',
-}
+};
 
 // TODO: Make conversions consistent with those in mathjs src/utils/latex.js
 

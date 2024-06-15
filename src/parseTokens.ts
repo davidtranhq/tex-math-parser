@@ -1,6 +1,8 @@
 import math from './customMath';
 import ParseError from './ParseError';
-import Token, { TokenType, typeToOperation, lexemeToType, lexemeToSymbol } from './Token';
+import Token, {
+  TokenType, typeToOperation, lexemeToType, lexemeToSymbol,
+} from './Token';
 
 /**
  * Create the corresponding MathJS node of a Token and its children.
@@ -10,9 +12,9 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
   let fn = typeToOperation[token.type];
   switch (token.type) {
     case TokenType.Equals:
-      return new (math as any).OperatorNode('==', fn, children)
+      return new math.OperatorNode('==', fn as any, children);
     case TokenType.Times:
-      return new (math as any).FunctionNode('cross', children);
+      return new math.FunctionNode('cross', children);
     case TokenType.Minus:
       // mathjs differentiates between subtraction and the unary minus
       fn = children.length === 1 ? 'unaryMinus' : fn;
@@ -26,18 +28,20 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Lessequal:
     case TokenType.Greater:
     case TokenType.Greaterequal:
-      return new (math as any).OperatorNode(lexemeToSymbol[token.lexeme] ?? token.lexeme, fn, children);
+      return new math.OperatorNode(
+        (lexemeToSymbol[token.lexeme] ?? token.lexeme) as any, fn as any, children,
+      );
     case TokenType.Caret:
       if (children.length < 2) {
         throw new ParseError('Expected two children for ^ operator', token);
       }
       // manually check for ^T as the transpose operation
-      if (children[1].isSymbolNode && children[1].name === 'T') {
-        return new (math as any).FunctionNode('transpose', [children[0]]);
+      if (math.isSymbolNode(children[1]) && children[1].name === 'T') {
+        return new math.FunctionNode('transpose', [children[0]]);
       }
-      return new (math as any).OperatorNode(token.lexeme, fn, children);
+      return new math.OperatorNode(token.lexeme as any, fn as any, children);
     case TokenType.Underscore:
-      return new (math as any).AccessorNode(children[0], new (math as any).IndexNode(children.slice(1)))
+      return new math.AccessorNode(children[0], new math.IndexNode(children.slice(1)));
     // mathjs built-in functions
     case TokenType.Bar:
     case TokenType.Sqrt:
@@ -63,39 +67,39 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Comp:
     case TokenType.Norm:
     case TokenType.Inv:
-      return new (math as any).FunctionNode(fn, children);
+      return new math.FunctionNode(fn as string, children);
     case TokenType.Opname:
-      return new (math as any).FunctionNode(children[0], children.slice(1));
+      return new math.FunctionNode(children[0], children.slice(1));
     case TokenType.Colon:
-      return new (math as any).AssignmentNode(children[0], children[1]);
+      return new math.AssignmentNode(children[0] as math.SymbolNode, children[1]);
     case TokenType.Variable:
-      return new (math as any).SymbolNode(token.lexeme);
+      return new math.SymbolNode(token.lexeme);
     case TokenType.Number: {
       // convert string lexeme to number if posssible
       const constant = Number.isNaN(Number(token.lexeme)) ? token.lexeme : +token.lexeme;
-      return new (math as any).ConstantNode(constant);
+      return new math.ConstantNode(constant as any);
     }
     case TokenType.Symbol:
-      return new (math as any).SymbolNode(lexemeToSymbol[token.lexeme]);
+      return new math.SymbolNode(lexemeToSymbol[token.lexeme]);
     case TokenType.E:
-      return new (math as any).SymbolNode('e');
+      return new math.SymbolNode('e');
     case TokenType.True:
-      return new (math as any).SymbolNode('true');
+      return new math.SymbolNode('true');
     case TokenType.False:
-      return new (math as any).SymbolNode('false');
+      return new math.SymbolNode('false');
     case TokenType.Undefined:
-      return new (math as any).SymbolNode('undefined');
+      return new math.SymbolNode('undefined');
     case TokenType.Matrix:
-      return new (math as any).ArrayNode(children);
+      return new math.ArrayNode(children);
     case TokenType.T:
-      return new (math as any).SymbolNode('T');
+      return new math.SymbolNode('T');
     default:
       throw new ParseError('unknown token type', token);
   }
 }
 
 function createMathJSString(tokens: Token[]): math.MathNode {
-  return new (math as any).SymbolNode(tokens.map(token => {
+  return new math.SymbolNode(tokens.map((token) => {
     switch (token.type) {
       case TokenType.Variable:
       case TokenType.Number:
@@ -107,13 +111,13 @@ function createMathJSString(tokens: Token[]): math.MathNode {
       case TokenType.Proj:
       case TokenType.Norm:
       case TokenType.Inv:
-        return token.lexeme
+        return token.lexeme;
       case TokenType.Symbol:
-        return lexemeToSymbol[token.lexeme]
+        return lexemeToSymbol[token.lexeme];
       default:
         throw new ParseError('unknown token type', token);
     }
-  }).join(""))
+  }).join(''));
 }
 
 // Maps each left grouping token to its corresponding right grouping token
@@ -200,7 +204,7 @@ class Parser {
      *          | OPNAME LBRACE customfunc RBRACE argument
      *
      * argument = grouping
-     *          | comp
+     *          | expr
      *
      * In general, each production is represented by one method (e.g. nextFactor(), nextPower()...)
      *
@@ -256,10 +260,10 @@ class Parser {
      * @returns Returns the root node of an expression tree.
      */
   nextComparison(): math.MathNode {
-    let leftExpr = this.nextExpression()
+    let leftExpr = this.nextExpression();
     // VARIABLE EQUALS comp
     if (this.match(TokenType.Colon)) {
-      if (!leftExpr.isSymbolNode) {
+      if (math.isSymbolNode(!leftExpr)) {
         throw new ParseError('expected variable (SymbolNode) on left hand of assignment',
           this.previousToken());
       }
@@ -271,14 +275,18 @@ class Parser {
 
     // expr ((EQUALS | NOTEQUALS | LESS | LESSEQUAL | GREATER | GREATEREQUAL) expr)*
 
-    if (this.match(TokenType.Equals, TokenType.Notequals, TokenType.Less,
-                      TokenType.Lessequal, TokenType.Greater, TokenType.Greaterequal)) {
+    if (
+      this.match(
+        TokenType.Equals, TokenType.Notequals, TokenType.Less,
+        TokenType.Lessequal, TokenType.Greater, TokenType.Greaterequal,
+      )
+    ) {
       // TODO: Convert this to allow chained comparisons (can't be directly done with while loop)
       const operator = this.nextToken();
       const rightExpr = this.nextExpression();
       leftExpr = createMathJSNode(operator, [leftExpr, rightExpr]);
     }
-    return leftExpr
+    return leftExpr;
   }
 
   /**
@@ -308,7 +316,7 @@ class Parser {
      */
   nextTerm(): math.MathNode {
     function isNumberNode(node: math.MathNode) {
-      return node.isConstantNode && !Number.isNaN(Number(node));
+      return math.isConstantNode(node) && !Number.isNaN(Number(node));
     }
     let leftFactor = this.nextFactor();
     let implicitMult = false;
@@ -573,17 +581,19 @@ class Parser {
 
   nextString() {
     const string = [this.tryConsume(
-      "expected a letter after \\operatorname{",
+      'expected a letter after \\operatorname{',
       TokenType.Variable, TokenType.Symbol, TokenType.E, TokenType.T,
-      TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv
+      TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross,
+      TokenType.Proj, TokenType.Norm, TokenType.Inv,
     )];
     while (this.match(
-      TokenType.Variable, TokenType.Symbol, TokenType.Number, TokenType.E, TokenType.T,
-      TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv
+      TokenType.Variable, TokenType.Symbol, TokenType.Number, TokenType.E,
+      TokenType.T, TokenType.Eigenvalues, TokenType.Eigenvectors,
+      TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv,
     )) {
       string.push(this.nextToken());
     }
-    return createMathJSString(string)
+    return createMathJSString(string);
   }
 
   /**
@@ -647,7 +657,7 @@ class Parser {
     const stateToken = this.tryConsume("expected 'True' or 'False' after '\\mathrm{' "
                                             + '(no other expressions'
                                             + 'are supported yet)', TokenType.True, TokenType.False);
-    this.tryConsume("expected '}' after \\mathrm{" + stateToken.lexeme, TokenType.Rbrace);
+    this.tryConsume(`expected '}' after \\mathrm{${stateToken.lexeme}`, TokenType.Rbrace);
     return createMathJSNode(stateToken);
   }
 

@@ -1,5 +1,5 @@
 diff --git a/node_modules/mathjs/lib/cjs/core/function/typed.js b/node_modules/mathjs/lib/cjs/core/function/typed.js
-index 190349f..5f0f75b 100644
+index 54e9b6e..9e2f0d7 100644
 --- a/node_modules/mathjs/lib/cjs/core/function/typed.js
 +++ b/node_modules/mathjs/lib/cjs/core/function/typed.js
 @@ -206,10 +206,16 @@ var createTyped = /* #__PURE__ */(0, _factory.factory)('typed', dependencies, fu
