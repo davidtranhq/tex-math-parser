@@ -11,12 +11,13 @@
     "postinstall": "patch-package",
     "build-node": "npx patch-package && tsc",
     "start-web": "npx patch-package && npx webpack-dev-server --mode development",
-    "build-web": "npx patch-package && npx webpack --mode production",
+    "build-web": "npx patch-package && npx webpack --mode production && cp dist/browser/index.js.LICENSE.txt dist/module",
     "build": "npm run build-node && npm run build-web",
     "lint": "npx eslint",
     "test": "npx jest"
   },
   "main": "dist/index.js",
+  "module": "dist/module/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
