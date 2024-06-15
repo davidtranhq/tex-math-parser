@@ -29,6 +29,8 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
         return new (math as any).FunctionNode('transpose', [children[0]]);
       }
       return new (math as any).OperatorNode(token.lexeme, fn, children);
+    case TokenType.Underscore:
+      return new (math as any).AccessorNode(children[0], new (math as any).IndexNode(children.slice(1)))
     // mathjs built-in functions
     case TokenType.Bar:
     case TokenType.Sqrt:
@@ -305,15 +307,36 @@ class Parser {
   /**
      * Consume the next power according to the following production:
      *
-     * power => primary (CARET primary)*
+     * power => subscript (CARET primary)*
      * @returns The root node of an expression tree.
      */
   nextPower(): math.MathNode {
-    let base = this.nextPrimary();
+    let base = this.nextSubscript();
     while (this.match(TokenType.Caret)) {
       const caret = this.nextToken();
       const exponent = this.nextPrimary();
       base = createMathJSNode(caret, [base, exponent]);
+    }
+    return base;
+  }
+
+  /**
+     * Consume the next subscript according to the following production:
+     *
+     * subscript => primary (_ primary)*
+     * @returns The root node of an expression tree.
+     */
+  nextSubscript(): math.MathNode {
+    let base = this.nextPrimary();
+    while (this.match(TokenType.Underscore)) {
+      const underscore = this.nextToken();
+      let subscript;
+      if (this.match(TokenType.Left, TokenType.Lparen, TokenType.Lbrace, TokenType.Bar)) {
+        subscript = this.nextGrouping();
+      } else {
+        subscript = [this.nextPrimary()];
+      }
+      base = createMathJSNode(underscore, [base, ...subscript]);
     }
     return base;
   }
@@ -427,7 +450,7 @@ class Parser {
       TokenType.Bar,
       TokenType.Lbrace);
     let grouping = this.nextExpression();
-    
+
     if (leftGrouping.type === TokenType.Bar) {
       // grouping with bars |x| also applies a function, so we create the corresponding function
       // here
@@ -436,7 +459,7 @@ class Parser {
     // a grouping can contain multiple children if the
     // grouping is parenthetical and the values are comma-seperated
     const children: math.MathNode[] = [grouping];
-    if (leftGrouping.type === TokenType.Lparen) {
+    if (leftGrouping.type === TokenType.Lparen || leftGrouping.type === TokenType.Lbrace) {
       while (this.match(TokenType.Comma)) {
         this.nextToken(); // consume comma
         children.push(this.nextExpression());

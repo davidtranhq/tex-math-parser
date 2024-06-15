@@ -75,7 +75,7 @@ export default function tokenizeTex(texStr: string) {
     // don't accept control characters
     if (isControl(c)) {
       throw new LexError('invalid control sequence encountered '
-                + '(forgot to escape backslashes (\\begin => \\\\begin)?', i);
+                + '(forgot to escape backslashes (\\begin => \\\\begin)?)', i);
     }
     // scan for single-char non-alphabetical lexemes
     if (!isAlpha(c) && c in lexemeToType) {
