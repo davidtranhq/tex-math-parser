@@ -94,7 +94,7 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
   }
 }
 
-function createString(tokens: Token[]): math.MathNode {
+function createMathJSString(tokens: Token[]): math.MathNode {
   return new (math as any).SymbolNode(tokens.map(token => {
     switch (token.type) {
       case TokenType.Variable:
@@ -565,7 +565,14 @@ class Parser {
   nextCustomFunc(): math.MathNode {
     const opname = this.nextToken(); // consume \\operatorname
     this.tryConsume("expected '{' after \\operatorname", TokenType.Lbrace);
-    const customFunc = [this.tryConsume(
+    const customFunc = this.nextString();
+    this.tryConsume("expected '}' after operator name", TokenType.Rbrace);
+    const argument = this.nextArgument();
+    return createMathJSNode(opname, [customFunc, ...argument]);
+  }
+
+  nextString() {
+    const string = [this.tryConsume(
       "expected a letter after \\operatorname{",
       TokenType.Variable, TokenType.Symbol, TokenType.E, TokenType.T,
       TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv
@@ -574,11 +581,9 @@ class Parser {
       TokenType.Variable, TokenType.Symbol, TokenType.Number, TokenType.E, TokenType.T,
       TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv
     )) {
-      customFunc.push(this.nextToken())
+      string.push(this.nextToken());
     }
-    this.tryConsume("expected '}' after operator name", TokenType.Rbrace);
-    const argument = this.nextArgument();
-    return createMathJSNode(opname, [createString(customFunc), ...argument]);
+    return createMathJSString(string)
   }
 
   /**
