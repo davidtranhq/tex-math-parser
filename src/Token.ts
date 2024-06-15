@@ -2,7 +2,13 @@ export const enum TokenType {
   Number,
   Variable,
   Symbol,
+  Colon,
   Equals,
+  Notequals,
+  Less,
+  Greater,
+  Lessequal,
+  Greaterequal,
   Plus,
   Minus,
   Star,
@@ -60,7 +66,16 @@ export const enum TokenType {
 }
 
 export const lexemeToType: { [key: string]: TokenType } = {
+  ':': TokenType.Colon,
   '=': TokenType.Equals,
+  '\\ne': TokenType.Notequals,
+  '\\neq': TokenType.Notequals,
+  '<': TokenType.Less,
+  '>': TokenType.Greater,
+  '\\le': TokenType.Lessequal,
+  '\\leq': TokenType.Lessequal,
+  '\\ge': TokenType.Greaterequal,
+  '\\geq': TokenType.Greaterequal,
   '+': TokenType.Plus,
   '-': TokenType.Minus,
   '*': TokenType.Star,
@@ -173,6 +188,13 @@ export const lexemeToSymbol: { [key: string]: string } = {
   '\\psi': 'psi',
   '\\Omega': 'Omega',
   '\\omega': 'omega',
+  // Comparisons
+  '\\ne': '!=',
+  '\\neq': '!=',
+  '\\le': '<=',
+  '\\leq': '<=',
+  '\\ge': '>=',
+  '\\geq': '>=',
   // Other
   '\\i': 'i',
   '\\infty': 'Infinity',
@@ -187,6 +209,12 @@ export const lexemeToSymbol: { [key: string]: string } = {
  * or of a function to be defined in scope (i.e. in the argument to math.evaluate())
  */
 export const typeToOperation: { [key in TokenType]?: string } = {
+  [TokenType.Equals]: 'equal',
+  [TokenType.Notequals]: 'unequal',
+  [TokenType.Less]: 'smaller',
+  [TokenType.Greater]: 'larger',
+  [TokenType.Lessequal]: 'smallerEq',
+  [TokenType.Greaterequal]: 'largerEq',
   [TokenType.Plus]: 'add',
   [TokenType.Minus]: 'subtract',
   [TokenType.Star]: 'multiply',
