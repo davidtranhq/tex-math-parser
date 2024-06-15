@@ -65,6 +65,8 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Norm:
     case TokenType.Inv:
       return new (math as any).FunctionNode(fn, children);
+    case TokenType.Opname:
+      return new (math as any).FunctionNode(children[0], children.slice(1));
     case TokenType.Colon:
       return new (math as any).AssignmentNode(children[0], children[1]);
     case TokenType.Variable:
@@ -91,6 +93,28 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     default:
       throw new ParseError('unknown token type', token);
   }
+}
+
+function createString(tokens: Token[]): math.MathNode {
+  return new (math as any).SymbolNode(tokens.map(token => {
+    switch (token.type) {
+      case TokenType.Variable:
+      case TokenType.Number:
+      case TokenType.E:
+      case TokenType.T:
+      case TokenType.Eigenvalues:
+      case TokenType.Eigenvectors:
+      case TokenType.Cross:
+      case TokenType.Proj:
+      case TokenType.Norm:
+      case TokenType.Inv:
+        return token.lexeme
+      case TokenType.Symbol:
+        return lexemeToSymbol[token.lexeme]
+      default:
+        throw new ParseError('unknown token type', token);
+    }
+  }).join(""))
 }
 
 // Maps each left grouping token to its corresponding right grouping token
@@ -540,12 +564,22 @@ class Parser {
      * @returns The root node of an expression tree.
      */
   nextCustomFunc(): math.MathNode {
-    this.nextToken(); // consume \\operatornmae
+    const opname = this.nextToken(); // consume \\operatorname
     this.tryConsume("expected '{' after \\operatorname", TokenType.Lbrace);
-    const customFunc = this.nextToken();
+    const customFunc = [this.tryConsume(
+      "expected a letter after \\operatorname{",
+      TokenType.Variable, TokenType.Symbol, TokenType.E, TokenType.T,
+      TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv
+    )];
+    while (this.match(
+      TokenType.Variable, TokenType.Symbol, TokenType.Number, TokenType.E, TokenType.T,
+      TokenType.Eigenvalues, TokenType.Eigenvectors, TokenType.Cross, TokenType.Proj, TokenType.Norm, TokenType.Inv
+    )) {
+      customFunc.push(this.nextToken())
+    }
     this.tryConsume("expected '}' after operator name", TokenType.Rbrace);
     const argument = this.nextArgument();
-    return createMathJSNode(customFunc, argument);
+    return createMathJSNode(opname, [createString(customFunc), ...argument]);
   }
 
   /**
