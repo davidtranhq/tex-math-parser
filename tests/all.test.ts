@@ -1,8 +1,8 @@
-import { parseTex, evaluateTex, Scope } from '../src/index';
 import { number, matrix, deepEqual } from 'mathjs';
+import { parseTex, evaluateTex, Scope } from '../src/index';
 
 function evaluate(texStr: string, scope?: Scope) {
-  return number(evaluateTex(texStr).evaluated);
+  return number(evaluateTex(texStr, scope).evaluated);
 }
 
 // this is the example shown in the README
@@ -25,5 +25,5 @@ test('evaluates full expression', () => {
       \sin\left(\frac{\pi}{6}\right)
     \end{bmatrix}`);
 
-    expect(deepEqual(actual, expected)).toBe(true);
+  expect(deepEqual(actual, expected)).toBe(true);
 });

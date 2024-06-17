@@ -1,8 +1,8 @@
-import { parseTex, evaluateTex, Scope } from '../src/index';
 import { matrix, deepEqual } from 'mathjs';
+import { parseTex, evaluateTex, Scope } from '../src/index';
 
 function evaluate(texStr: string, scope?: Scope) {
-  return evaluateTex(texStr).evaluated;
+  return evaluateTex(texStr, scope).evaluated;
 }
 
 test('evaluates addition', () => {
@@ -23,7 +23,7 @@ test('evaluates exponentiation', () => {
   // try also with different groupings
   expect(evaluate('2^(3)')).toStrictEqual(8);
   expect(evaluate('2^{3}')).toStrictEqual(8);
-})
+});
 
 test('evaluates division', () => {
   expect(evaluate('8 / 2')).toStrictEqual(4);
@@ -42,8 +42,7 @@ test('evaluates cross product', () => {
   const actual = evaluate(String.raw`
     \begin{bmatrix}1\\2\\3\end{bmatrix}
     \times
-    \begin{bmatrix}4\\5\\6\end{bmatrix}`
-  );
+    \begin{bmatrix}4\\5\\6\end{bmatrix}`);
 
   expect(deepEqual(expected, actual)).toBe(true);
 });
