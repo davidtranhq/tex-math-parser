@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "start": "tsc --watch",
+    "prepare": "npm run build",
     "build-node": "tsc",
     "start-web": "npx webpack-dev-server --mode development",
     "build-web": "npx webpack --mode production",
