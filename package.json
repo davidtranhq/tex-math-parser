@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "npx patch-package && tsc --watch",
+    "prepare": "npm run build",
     "postinstall": "patch-package",
     "build-node": "npx patch-package && tsc",
     "start-web": "npx patch-package && npx webpack-dev-server --mode development",
