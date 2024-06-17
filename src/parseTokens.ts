@@ -178,44 +178,44 @@ class Parser {
      * comp => expr ((EQUALS | NOTEQUALS | LESS | LESSEQUAL | GREATER | GREATEREQUAL) expr)*
      *       | VARIABLE EQUALS EQUALS comp
      *
-     * expr = term ((PLUS | MINUS) term)*
+     * expr => term ((PLUS | MINUS) term)*
      *
-     * term = factor ((STAR factor | primary))* //primary and factor must both not be numbers
+     * term => factor ((STAR factor | primary))*  // primary and factor must both not be numbers
      *
-     * factor = MINUS? power
+     * factor => MINUS? power
      *
-     * power = primary (CARET primary)*
+     * power => primary (CARET primary)*
      *
-     * primary = grouping
-     *         | environnment
-     *         | frac
-     *         | sqrt
-     *         | log
-     *         | function
-     *         | NUMBER
-     *         | VARIABLE
+     * primary => grouping
+     *          | environnment
+     *          | frac
+     *          | sqrt
+     *          | log
+     *          | function
+     *          | NUMBER
+     *          | VARIABLE
      *
-     * grouping = LEFT LPAREN comp RIGHT RPAREN
-     *          | LPAREN comp RPAREN
-     *          | LBRACE comp RBRACE
-     *          | LEFT BAR comp RIGHT BAR
-     *          | BAR comp BAR
+     * grouping => LEFT LPAREN comp RIGHT RPAREN
+     *           | LPAREN comp RPAREN
+     *           | LBRACE comp RBRACE
+     *           | LEFT BAR comp RIGHT BAR
+     *           | BAR comp BAR
      *
-     * environnment = matrix
+     * environnment => matrix
      *
-     * frac = FRAC LBRACE comp RBRACE LBRACE comp RBRACE
+     * frac => FRAC LBRACE comp RBRACE LBRACE comp RBRACE
      *
-     * matrix = BEGIN LBRACE MATRIX RBRACE ((comp)(AMP | DBLBACKSLASH))* END LBRACE MATRIX RBRACE
+     * matrix => BEGIN LBRACE MATRIX RBRACE ((comp)(AMP | DBLBACKSLASH))* END LBRACE MATRIX RBRACE
      *
-     * sqrt = SQRT (LBRACKET comp RBRACKET)? argument
+     * sqrt => SQRT (LBRACKET comp RBRACKET)? argument
      *
-     * log = LOG (UNDERSCORE (primary))? argument
+     * log => LOG (UNDERSCORE (primary))? argument
      *
-     * function = (SIN | COS | TAN | ...) argument
-     *          | OPNAME LBRACE customfunc RBRACE argument
+     * function => (SIN | COS | TAN | ...) argument
+     *           | OPNAME LBRACE customfunc RBRACE argument
      *
-     * argument = grouping
-     *          | expr
+     * argument => grouping
+     *           | expr
      *
      * In general, each production is represented by one method (e.g. nextFactor(), nextPower()...)
      *
@@ -525,12 +525,12 @@ class Parser {
   /**
      * Consume the next grouping according to the following production:
      *
-     * grouping = LEFT LPAREN comp RIGHT RPAREN
-     *          | LPAREN comp RPAREN
-     *          | LBRACE comp RBRACE
-     *          | LEFT BAR comp RIGHT BAR
-     *          | BAR comp BAR
-     *          | comp
+     * grouping => LEFT LPAREN comp RIGHT RPAREN
+     *           | LPAREN comp RPAREN
+     *           | LBRACE comp RBRACE
+     *           | LEFT BAR comp RIGHT BAR
+     *           | BAR comp BAR
+     *           | comp
      *
      * @returns The root node of an expression tree.
      */
@@ -718,12 +718,12 @@ class Parser {
   /**
      * Consume the next undefined according to the following production:
      *
-     * undefined => MATHBB LBRACE UNDEFINED RBRACE
+     * undefined => MATHBF LBRACE UNDEFINED RBRACE
      *
      * @returns The root node of an expression tree.
      */
   nextUndefined(): math.MathNode {
-    this.nextToken(); // consume \mathrm
+    this.nextToken(); // consume \mathbf
     this.tryConsume("expected '{' after \\mathbf", TokenType.Lbrace);
     const stateToken = this.tryConsume("expected '?' after '\\mathbf{' "
                                             + '(no other expressions'
