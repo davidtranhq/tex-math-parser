@@ -38,6 +38,8 @@ or link to it from a CDN:
 <script src=https://cdn.jsdelivr.net/npm/tex-math-parser></script>
 ```
 
+There are three build outputs included. At `dist/index.js` is the standard CJS entry point (default if loaded as a package). At `dist/module/index.js` is the packed ES6 module entry point (default if loaded as a module). At `dist/browser/index.js` is the packed global variable entry point. The latter two can be utilized in a web browser directly, whereas the former would require a CJS loader to be utilized.
+
 ## Usage
 
 Given the following TeX source string:
