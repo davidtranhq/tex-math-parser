@@ -52,7 +52,7 @@ function scanNumber(str: string, pos: number) {
 }
 
 class LexError extends Error {
-  constructor(message = '', pos: number, ...args: any) {
+  constructor(message: string, pos: number, ...args: any) {
     super(...args);
     this.name = 'LexError';
     this.message = `at ${pos}: ${message}`;
