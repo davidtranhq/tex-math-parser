@@ -8,8 +8,7 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "start": "npx patch-package && tsc --watch",
-    "postinstall": "patch-package",
+    "start": "tsc --watch",
     "lint": "npx eslint",
     "test": "npx jest"
   },
@@ -37,8 +36,7 @@
   "homepage": "https://github.com/davidtranhq/tex-math-parser#readme",
   "dependencies": {
     "mathjs": "^12.4.1",
-    "matrix-eig": "^1.0.0",
-    "patch-package": "^8.0.0"
+    "matrix-eig": "^1.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

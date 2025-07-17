@@ -7,27 +7,27 @@ const math = create(all, {
 }) as MathJsInstance;
 
 // for more conversions, visit https://github.com/josdejong/mathjs/blob/master/src/core/function/typed.js#L167
-math.typed.clearConversions();
-math.typed.addConversions([
-    {
-      from: 'number',
-      to: 'BigNumber',
-      convert: function (x) {
-        return new math.bignumber(x)
+(math.typed as any).clearConversions();
+(math.typed as any).addConversions([
+  {
+    from: 'number',
+    to: 'BigNumber',
+    convert: function (x: number) {
+      return math.bignumber(x);
+    },
+  },
+  {
+    from: 'string',
+    to: 'BigNumber',
+    convert: function (x: number) {
+      try {
+        return math.bignumber(x);
+      } catch (err) {
+        throw new Error('Cannot convert "' + x + '" to BigNumber');
       }
     },
-    {
-      from: 'string',
-      to: 'BigNumber',
-      convert: function (x) {
-        try {
-          return new math.bignumber(x)
-        } catch (err) {
-          throw new Error('Cannot convert "' + x + '" to BigNumber')
-        }
-      }
-    }
-  ])
+  },
+]);
 
 // Additional functions to be passed to the scope of math.evaluate(scope)
 // (not defined in mathjs)

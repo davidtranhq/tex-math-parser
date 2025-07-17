@@ -2,7 +2,7 @@ import tokenizeTex from './tokenizeTex';
 import parseTokens from './parseTokens';
 
 // scope used by evaluateTex to resolve identifiers
-type Scope = { [key: string]: any };
+export type Scope = { [key: string]: any };
 
 /**
  * Parse a TeX math string into a MathJS expression tree.
@@ -26,5 +26,4 @@ function evaluateTex(texStr: string, scope?: Scope) {
 export {
   parseTex,
   evaluateTex,
-  Scope,
 };
