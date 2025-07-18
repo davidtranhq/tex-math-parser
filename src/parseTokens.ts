@@ -6,7 +6,7 @@ import Token, { TokenType, typeToOperation, lexemeToType } from './Token';
  * Create the corresponding MathJS node of a Token and its children.
  * @returns A newly constructed MathJS node.
  */
-function createMathJSNode(token: Token, children: typeof math.Node[] = []): typeof math.Node {
+function createMathJSNode(token: Token, children: math.MathNode[] = []): math.MathNode {
   let fn = typeToOperation[token.type];
   switch (token.type) {
     case TokenType.Times:
@@ -212,7 +212,7 @@ class Parser {
      *       | VARIABLE EQUALS expr
      * @returns Returns the root node of an expression tree.
      */
-  nextExpression(): typeof math.Node {
+  nextExpression(): math.MathNode {
     let leftTerm = this.nextTerm();
     // VARIABLE EQUALS expr
     if (this.match(TokenType.Equals)) {
@@ -241,8 +241,8 @@ class Parser {
      * term => factor (((STAR | TIMES) factor) | power)*
      * @returns Returns the root node of an expression tree.
      */
-  nextTerm(): typeof math.Node {
-    function isNumberNode(node: typeof math.Node) {
+  nextTerm(): math.MathNode {
+    function isNumberNode(node: math.MathNode) {
       return 'isConstantNode' in node && node.isConstantNode && !Number.isNaN(Number(node));
     }
     let leftFactor = this.nextFactor();
@@ -292,7 +292,7 @@ class Parser {
      * factor => MINUS? power
      * @returns The root node of an expression tree.
      */
-  nextFactor(): typeof math.Node {
+  nextFactor(): math.MathNode {
     // match for optional factor negation
     if (this.match(TokenType.Minus)) {
       const negate = this.nextToken();
@@ -308,7 +308,7 @@ class Parser {
      * power => primary (CARET primary)*
      * @returns The root node of an expression tree.
      */
-  nextPower(): typeof math.Node {
+  nextPower(): math.MathNode {
     let base = this.nextPrimary();
     while (this.match(TokenType.Caret)) {
       const caret = this.nextToken();
@@ -345,7 +345,7 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextPrimary(): typeof math.Node {
+  nextPrimary(): math.MathNode {
     const lookaheadType = this.match(...primaryTypes);
     if (lookaheadType === undefined) {
       throw new ParseError('expected primary', this.currentToken());
@@ -415,7 +415,7 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextGrouping(): typeof math.Node[] {
+  nextGrouping(): math.MathNode[] {
     // token indicating start of grouping
     let leftRight = false; // flag indicating if grouping tokens are marked with \left and \right
     if (this.match(TokenType.Left)) {
@@ -435,7 +435,7 @@ class Parser {
     }
     // a grouping can contain multiple children if the
     // grouping is parenthetical and the values are comma-seperated
-    const children: typeof math.Node[] = [grouping];
+    const children: math.MathNode[] = [grouping];
     if (leftGrouping.type === TokenType.Lparen) {
       while (this.match(TokenType.Comma)) {
         this.nextToken(); // consume comma
@@ -456,7 +456,7 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextUnaryFunc(): typeof math.Node {
+  nextUnaryFunc(): math.MathNode {
     const func = this.nextToken();
     const argument = this.nextArgument();
     return createMathJSNode(func, argument);
@@ -468,7 +468,7 @@ class Parser {
      * customFn => OPNAME LBRACE identifier RBRACE grouping
      * @returns The root node of an expression tree.
      */
-  nextCustomFunc(): typeof math.Node {
+  nextCustomFunc(): math.MathNode {
     this.nextToken(); // consume \\operatornmae
     this.tryConsume("expected '{' after \\operatorname", TokenType.Lbrace);
     const customFunc = this.nextToken();
@@ -485,7 +485,7 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextArgument(): typeof math.Node[] {
+  nextArgument(): math.MathNode[] {
     let argument;
     // try to match grouping e.g. (), {}, ||
     if (this.match(TokenType.Left,
@@ -508,7 +508,7 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextFrac(): typeof math.Node {
+  nextFrac(): math.MathNode {
     const frac = this.nextToken();
     this.tryConsume("expected '{' for the numerator in \\frac", TokenType.Lbrace);
     const numerator = this.nextExpression();
@@ -532,7 +532,7 @@ class Parser {
      *
      * @returns The root node of an expression tree.
      */
-  nextMatrix(): typeof math.Node {
+  nextMatrix(): math.MathNode {
     this.nextToken(); // consume \begin
     this.tryConsume("expected '{' after \\begin", TokenType.Lbrace);
     const matrixToken = this.tryConsume("expected 'matrix' after '\\begin{' "
@@ -607,6 +607,6 @@ class Parser {
  *
  * @returns The root node of a MathJS expression tree.
  */
-export default function parseTokens(tokens: Token[]): typeof math.Node {
+export default function parseTokens(tokens: Token[]): math.MathNode {
   return (new Parser(tokens)).nextExpression();
 }
