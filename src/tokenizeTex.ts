@@ -103,7 +103,7 @@ export default function tokenizeTex(texStr: string) {
         } else {
           lexeme = `\\${command}`;
           type = lexemeToType[lexeme];
-          if (type == undefined && lexeme in lexemeToSymbol) {
+          if (type === undefined && lexeme in lexemeToSymbol) {
             type = TokenType.Symbol;
           }
           if (type === undefined) {

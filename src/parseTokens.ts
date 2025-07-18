@@ -2,6 +2,7 @@ import math from './customMath';
 import ParseError from './ParseError';
 import Token, {
   TokenType, typeToOperation, lexemeToType, lexemeToSymbol,
+  typeToMultivarOperation,
 } from './Token';
 
 /**
@@ -69,6 +70,9 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Comp:
     case TokenType.Norm:
     case TokenType.Inv:
+      if (children.length > 1) {
+        fn = typeToMultivarOperation[token.type] ?? fn;
+      }
       return new math.FunctionNode(fn, children);
     case TokenType.Opname:
       return new math.FunctionNode(children[0], children.slice(1));
@@ -126,6 +130,7 @@ function createMathJSString(tokens: Token[]): math.MathNode {
 const rightGrouping: { [key in TokenType]?: TokenType } = {
   [TokenType.Lparen]: TokenType.Rparen,
   [TokenType.Lbrace]: TokenType.Rbrace,
+  [TokenType.Lbracket]: TokenType.Rbracket,
   [TokenType.Left]: TokenType.Right,
   [TokenType.Bar]: TokenType.Bar,
 };
@@ -186,6 +191,8 @@ class Parser {
      * primary = grouping
      *         | environnment
      *         | frac
+     *         | sqrt
+     *         | log
      *         | function
      *         | NUMBER
      *         | VARIABLE
@@ -202,7 +209,11 @@ class Parser {
      *
      * matrix = BEGIN LBRACE MATRIX RBRACE ((comp)(AMP | DBLBACKSLASH))* END LBRACE MATRIX RBRACE
      *
-     * function = (SQRT | SIN | COS | TAN | ...) argument
+     * sqrt = SQRT (LBRACKET comp RBRACKET)? argument
+     *
+     * log = LOG (UNDERSCORE (primary))? argument
+     *
+     * function = (SIN | COS | TAN | ...) argument
      *          | OPNAME LBRACE customfunc RBRACE argument
      *
      * argument = grouping
@@ -435,6 +446,8 @@ class Parser {
      * primary => grouping
      *          | environnment
      *          | frac
+     *          | sqrt
+     *          | log
      *          | function
      *          | NUMBER
      *          | VARIABLE
@@ -464,7 +477,6 @@ class Parser {
       case TokenType.T:
         primary = createMathJSNode(this.nextToken());
         break;
-      case TokenType.Sqrt:
       case TokenType.Sin:
       case TokenType.Cos:
       case TokenType.Tan:
@@ -477,7 +489,6 @@ class Parser {
       case TokenType.Sinh:
       case TokenType.Cosh:
       case TokenType.Tanh:
-      case TokenType.Log:
       case TokenType.Ln:
       case TokenType.Det:
         primary = this.nextUnaryFunc();
@@ -487,6 +498,12 @@ class Parser {
         break;
       case TokenType.Frac:
         primary = this.nextFrac();
+        break;
+      case TokenType.Sqrt:
+        primary = this.nextSqrt();
+        break;
+      case TokenType.Log:
+        primary = this.nextLog();
         break;
       case TokenType.Mathrm:
         // booleans are the only currently supported mathrm tag
@@ -644,6 +661,43 @@ class Parser {
       denominator = this.nextComparison();
     }
     return createMathJSNode(frac, [numerator, denominator]);
+  }
+
+  /**
+     * Consume the next root according to the following production:
+     *
+     * sqrt => SQRT (LBRACKET comp RBRACKET)? argument
+     *
+     * @returns The root node of an expression tree.
+     */
+  nextSqrt(): math.MathNode {
+    const sqrt = this.nextToken();
+    let degree: math.MathNode[] = [];
+    if (this.match(TokenType.Lbracket)) {
+      this.tryConsume("expected '[' for the degree in \\sqrt", TokenType.Lbracket);
+      degree = [this.nextComparison()];
+      this.tryConsume("expected ']' for the degree in \\sqrt", TokenType.Rbracket);
+    }
+    const radicand = this.nextArgument();
+    return createMathJSNode(sqrt, radicand.concat(degree));
+  }
+
+  /**
+     * Consume the next log according to the following production:
+     *
+     * log => LOG (UNDERSCORE (grouping | primary))? argument
+     *
+     * @returns The root node of an expression tree.
+     */
+  nextLog(): math.MathNode {
+    const log = this.nextToken();
+    let degree: math.MathNode[] = [];
+    if (this.match(TokenType.Underscore)) {
+      this.tryConsume("expected '_' for the degree in \\log", TokenType.Underscore);
+      degree = [this.nextPrimary()];
+    }
+    const argument = this.nextArgument();
+    return createMathJSNode(log, argument.concat(degree));
   }
 
   /**
