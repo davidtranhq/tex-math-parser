@@ -10,7 +10,7 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
   let fn = typeToOperation[token.type];
   switch (token.type) {
     case TokenType.Times:
-      return new (math as any).FunctionNode('cross', children);
+      return new math.FunctionNode('cross', children);
     case TokenType.Minus:
       // mathjs differentiates between subtraction and the unary minus
       fn = children.length === 1 ? 'unaryMinus' : fn;
@@ -19,16 +19,16 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Star:
     case TokenType.Frac:
     case TokenType.Slash:
-      return new (math as any).OperatorNode(token.lexeme, fn, children);
+      return new math.OperatorNode(token.lexeme as any, fn as any, children);
     case TokenType.Caret:
       if (children.length < 2) {
         throw new ParseError('Expected two children for ^ operator', token);
       }
       // manually check for ^T as the transpose operation
-      if ('isSymbolNode' in children[1] && children[1].isSymbolNode && children[1].name === 'T') {
-        return new (math as any).FunctionNode('transpose', [children[0]]);
+      if (math.isSymbolNode(children[1]) && children[1].name === 'T') {
+        return new math.FunctionNode('transpose', [children[0]]);
       }
-      return new (math as any).OperatorNode(token.lexeme, fn, children);
+      return new math.OperatorNode(token.lexeme as any, fn as any, children);
     // mathjs built-in functions
     case TokenType.Bar:
     case TokenType.Sqrt:
@@ -54,24 +54,24 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Comp:
     case TokenType.Norm:
     case TokenType.Inv:
-      return new (math as any).FunctionNode(fn, children);
+      return new math.FunctionNode(fn, children);
     case TokenType.Equals:
-      return new (math as any).AssignmentNode(children[0], children[1]);
+      return new math.AssignmentNode(children[0] as math.SymbolNode, children[1]);
     case TokenType.Variable:
-      return new (math as any).SymbolNode(token.lexeme);
+      return new math.SymbolNode(token.lexeme);
     case TokenType.Number: {
       // convert string lexeme to number if posssible
       const constant = Number.isNaN(Number(token.lexeme)) ? token.lexeme : +token.lexeme;
-      return new (math as any).ConstantNode(constant);
+      return new math.ConstantNode(constant);
     }
     case TokenType.Pi:
-      return new (math as any).SymbolNode('pi');
+      return new math.SymbolNode('pi');
     case TokenType.E:
-      return new (math as any).SymbolNode('e');
+      return new math.SymbolNode('e');
     case TokenType.Matrix:
-      return new (math as any).ArrayNode(children);
+      return new math.ArrayNode(children);
     case TokenType.T:
-      return new (math as any).SymbolNode('T');
+      return new math.SymbolNode('T');
     default:
       throw new ParseError('unknown token type', token);
   }
@@ -216,7 +216,7 @@ class Parser {
     let leftTerm = this.nextTerm();
     // VARIABLE EQUALS expr
     if (this.match(TokenType.Equals)) {
-      if ('isSymbolNode' in leftTerm && !leftTerm.isSymbolNode) {
+      if (!math.isSymbolNode(leftTerm)) {
         throw new ParseError('expected variable (SymbolNode) on left hand of assignment',
           this.previousToken());
       }
@@ -243,7 +243,7 @@ class Parser {
      */
   nextTerm(): math.MathNode {
     function isNumberNode(node: math.MathNode) {
-      return 'isConstantNode' in node && node.isConstantNode && !Number.isNaN(Number(node));
+      return math.isConstantNode(node) && !Number.isNaN(Number(node));
     }
     let leftFactor = this.nextFactor();
     let implicitMult = false;
