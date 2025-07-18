@@ -13,10 +13,6 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
   switch (token.type) {
     case TokenType.Equals:
       return new math.OperatorNode('==', fn as any, children);
-    case TokenType.Notequals:
-    case TokenType.Lessequal:
-    case TokenType.Greaterequal:
-      return new math.OperatorNode(lexemeToSymbol[token.lexeme] as any, fn as any, children);
     case TokenType.Times:
       return new math.FunctionNode('cross', children);
     case TokenType.Minus:
@@ -27,9 +23,16 @@ function createMathJSNode(token: Token, children: math.MathNode[] = []): math.Ma
     case TokenType.Star:
     case TokenType.Frac:
     case TokenType.Slash:
+    case TokenType.Notequals:
     case TokenType.Less:
+    case TokenType.Lessequal:
     case TokenType.Greater:
-      return new math.OperatorNode(token.lexeme as any, fn as any, children);
+    case TokenType.Greaterequal:
+      return new math.OperatorNode(
+        (lexemeToSymbol[token.lexeme] ?? token.lexeme) as any,
+        fn as any,
+        children,
+      );
     case TokenType.Caret:
       if (children.length < 2) {
         throw new ParseError('Expected two children for ^ operator', token);
