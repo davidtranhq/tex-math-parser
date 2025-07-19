@@ -1,4 +1,4 @@
-import Token, { TokenType, lexemeToType } from './Token';
+import Token, { TokenType, lexemeToType, lexemeToSymbol } from './Token';
 
 function isWhitespace(c: string) {
   return c.trim() === '';
@@ -75,7 +75,7 @@ export default function tokenizeTex(texStr: string) {
     // don't accept control characters
     if (isControl(c)) {
       throw new LexError('invalid control sequence encountered '
-                + '(forgot to escape backslashes (\\begin => \\\\begin)?', i);
+                + '(forgot to escape backslashes (\\begin => \\\\begin)?)', i);
     }
     // scan for single-char non-alphabetical lexemes
     if (!isAlpha(c) && c in lexemeToType) {
@@ -103,6 +103,9 @@ export default function tokenizeTex(texStr: string) {
         } else {
           lexeme = `\\${command}`;
           type = lexemeToType[lexeme];
+          if (type === undefined && lexeme in lexemeToSymbol) {
+            type = TokenType.Symbol;
+          }
           if (type === undefined) {
             throw new LexError(`unknown command "${lexeme}"`, i);
           }
