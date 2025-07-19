@@ -9,10 +9,16 @@
   "scripts": {
     "dev": "tsc --watch",
     "start": "tsc --watch",
+    "prepare": "npm run build",
+    "build-node": "tsc",
+    "start-web": "npx webpack-dev-server --mode development",
+    "build-web": "npx webpack --mode production",
+    "build": "npm run build-node && npm run build-web",
     "lint": "npx eslint",
     "test": "npx jest"
   },
   "main": "dist/index.js",
+  "module": "dist/module/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -49,6 +55,9 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.3"
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.4.3",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^6.0.1"
   }
 }
