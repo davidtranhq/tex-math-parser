@@ -7,13 +7,18 @@ This library works well as a bridge between [MathQuill](http://mathquill.com/) a
 ## TeX Features
 
 * Common operators available in TeX math mode: `+`, `-`, `*`, `^`, `/`, `\cdot`, `||` (absolute value), `\times` (cross product)
+* Comparison operators: `=`, `\ne`/`\neq`, `<`, `>`, `\le`/`\leq`, `\ge`/`\geq`
+* Assignment operator: `:=`
 * Basic functions: `\sqrt`, `\frac`, `\sin`, `\cos`, `\tan`, `\csc`, `\sec`, `\cot`, `\arcsin`, `\arccos`, `\arctan`, `\log`, `\ln`, `\det`
-* Custom functions implemented with MathJS: `eigenvectors`, `eigenvalues`, `cross`, `proj`, `comp`, `norm`, `inv`
-    * Since these are custom functions, they should be formatted as `\operatorname{function}` in TeX.
-* Constants: `\pi`, `e`
+* Functions with custom bases: `\sqrt[n]`, `\log_n`
+* Custom functions implemented with MathJS: `eigenvectors`, `eigenvalues`, `cross`, `proj`, `comp`, `norm`, `inv`, ...
+  * Since these are custom functions, they should be formatted as `\operatorname{function}` in TeX.
+* Constants: `\pi`, `e`, `\i`, `{True}`, `{False}`, `{?}` (undefined), `\infty`
 * Environments: `matrix`
-* Variables
-    * `^T` is interpreted as the transpose operation
+* Variables (including greek symbols): `x`, `y`, `a`, `\alpha`, `\theta`, ...
+  * `^T` is interpreted as the transpose operation
+  * Non-latin symbols are converted to their English spellings (`\alpha` in TeX becomes the MathJS symbol `alpha`)
+* Variable subscripts: `a_b`, `c_{max}`
 
 ## Browser Support
 
@@ -23,7 +28,7 @@ Any browser with ES6 support.
 
 Install with NPM:
 
-```
+```bash
 npm install tex-math-parser 
 ```
 
@@ -38,6 +43,7 @@ or link to it from a CDN:
 Given the following TeX source string:
 
 ![Example TeX](docs/imgs/example_tex.png)
+
 ```latex
 \begin{bmatrix}1&3\\2&4\end{bmatrix}\begin{bmatrix}-5\\-6\end{bmatrix}+\left|\sqrt{7}-\sqrt{8}\right|^{\frac{9}{10}}\begin{bmatrix}\cos\left(\frac{\pi}{6}\right)\\\sin\left(\frac{\pi}{6}\right)\end{bmatrix}
 ```
@@ -59,12 +65,14 @@ console.log(texAnswer);
 // \begin{bmatrix}-22.812481734548864\\-33.89173627896382\\\end{bmatrix}
 ```
 
-Parse the string and get a [a MathJS expression tree](https://mathjs.org/docs/expressions/expression_trees.html):
+Parse the string and get [a MathJS expression tree](https://mathjs.org/docs/expressions/expression_trees.html):
+
 ```javascript
 const mathJSTree = parseTex(escapedTex);
 ```
 
 ### Variables
+
 If the TeX string contains variables, the value of the variables must be supplied when evaluating.
 
 ![Example TeX with variables](docs/imgs/example_tex_variables.png)
@@ -79,7 +87,7 @@ console.log(answer); // 1
 
 `evaluateTex(texStr: string, scope?: Object)`
 
-Evaluate a TeX string, replacing any variable occurences with their values in `scope`. The answer is returned as a TeX string.
+Evaluate a TeX string, replacing any variable occurrences with their values in `scope`. The answer is returned as a TeX string.
 
 `parseTex(texStr: string)`
 
@@ -87,7 +95,7 @@ Convert a TeX string into [a MathJS expression tree](https://mathjs.org/docs/exp
 
 ## Contributing
 
-Please feel free to make a PR and add any features, add unit tests, or refactor any of the code. Both  `tokenizeTex` and the `Parser` are quite messy and could really use a clean-up (maybe someday I'll get around to it...).
+Please feel free to make a PR and add any features, add unit tests, or refactor any of the code. Both `tokenizeTex` and the `Parser` are quite messy and could really use a clean-up (maybe someday I'll get around to it...).
 
 Run `pnpm test` to run some unit tests and make sure they're passing!
 
@@ -99,36 +107,48 @@ TODO: include better documentation on how to do this
 
 `parseTex` first lexes the TeX string into tokens, which are then passed to the parser to create the expression tree. A context-free grammar for the simplified version of TeX math used by the parser is as follows:
 
-```
-expr = term ((PLUS | MINUS) term)*
+```text
+comp => expr ((EQUALS | NOTEQUALS | LESS | LESSEQUAL | GREATER | GREATEREQUAL) expr)*
+      | VARIABLE EQUALS EQUALS comp
 
-term = factor ((CDOT factor | primary )* // primary and factor must both not be NUMBERs
+expr => term ((PLUS | MINUS) term)*
 
-factor = MINUS? power
+term => factor ((STAR factor | primary))*  // primary and factor must both not be numbers
 
-power = primary (CARET primary)*
+factor => MINUS? power
 
-primary = grouping
-        | environnment
-        | frac
-        | function
-        | NUMBER
-        | VARIABLE
+power => primary (CARET primary)*
 
-grouping = LEFT LPAREN expr RIGHT RPAREN
-         | LPAREN expr RPAREN
-         | LBRACE expr RBRACE
-         | LEFT BAR expr RIGHT BAR
-         | BAR expr BAR
+primary => grouping
+         | environnment
+         | frac
+         | sqrt
+         | log
+         | function
+         | NUMBER
+         | VARIABLE
 
-environnment = matrix
+grouping => LEFT LPAREN comp RIGHT RPAREN
+          | LPAREN comp RPAREN
+          | LBRACE comp RBRACE
+          | LEFT BAR comp RIGHT BAR
+          | BAR comp BAR
 
-frac = FRAC LBRACE expr RBRACE LBRACE expr RBRACE
+environnment => matrix
 
-function = (SQRT | SIN | COS | TAN ...) grouping
+frac => FRAC LBRACE comp RBRACE LBRACE comp RBRACE
 
-matrix = BEGIN LBRACE MATRIX RBRACE ((expr)(AMP | DBLBACKSLASH))* END LBRACE MATRIX RBRACE
+matrix => BEGIN LBRACE MATRIX RBRACE ((comp)(AMP | DBLBACKSLASH))* END LBRACE MATRIX RBRACE
+
+sqrt => SQRT (LBRACKET comp RBRACKET)? argument
+
+log => LOG (UNDERSCORE (primary))? argument
+
+function => (SIN | COS | TAN | ...) argument
+          | OPNAME LBRACE customfunc RBRACE argument
+
+argument => grouping
+          | primary
 ```
 
 As the grammar is not left-recursive, the parser was implemented as a recursive descent parser with each production being represented by a separate function. This keeps the parser easily extensible.
-

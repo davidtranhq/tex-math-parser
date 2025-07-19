@@ -1,4 +1,4 @@
-import { parseTex, evaluateTex, Scope } from '../src/index';
+import { evaluateTex, Scope } from '../src/index';
 import { number } from 'mathjs';
 
 function evaluate(texStr: string, scope?: Scope) {

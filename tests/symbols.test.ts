@@ -39,7 +39,7 @@ describe('evaluates with symbol (single char)', () => {
 });
 
 describe('evaluates with symbol (multiple chars)', () => {
-  test('aa, bbb, abcd', () => {
+  test('multi-character symbols: aa, bbb, abcd', () => {
     const aa = evaluate('aa', { aa: 1 });
     const bbb = evaluate('bbb', { bbb: 1 });
     const abcd = evaluate('abcd', { abcd: 1 });
@@ -49,7 +49,27 @@ describe('evaluates with symbol (multiple chars)', () => {
     expect(abcd).toStrictEqual(1);
   });
 
-  test('addition with symbols: aa, bbb', () => {
+  test('addition with multi-character symbols: aa, bbb', () => {
     expect(evaluate('aa + bbb', { aa: 1, bbb: 2 })).toStrictEqual(3);
+  });
+});
+
+describe('evaluates with symbol (compound parsing)', () => {
+  test('subscripts: a_b, c_{de}', () => {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const a_b = evaluate('a_b', { a: [2, 3], b: 1 });
+    expect(a_b).toStrictEqual(2);
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const c_de = evaluate('c_{de}', { c: [2, 3], de: 1 });
+    expect(c_de).toStrictEqual(2);
+  });
+
+  test('special symbols: α, ∞', () => {
+    const alpha = evaluate('\\alpha', { alpha: 1 });
+    expect(alpha).toStrictEqual(1);
+
+    const infinity = evaluate('\\infty');
+    expect(infinity).toStrictEqual(Number.POSITIVE_INFINITY);
   });
 });
