@@ -7,12 +7,13 @@
     "url": "git+https://github.com/davidtranhq/tex-math-parser.git"
   },
   "scripts": {
-    "dev": "tsc --watch",
+    "build": "npx vite build",
     "start": "tsc --watch",
     "lint": "npx eslint",
     "test": "npx jest"
   },
-  "main": "dist/index.js",
+  "main": "dist/tex-math-parser.umd.js",
+  "module": "dist/tex-math-parser.es.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -49,6 +50,8 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.3",
+    "vite": "^7.0.5",
+    "vite-plugin-dts": "^4.5.4"
   }
 }
