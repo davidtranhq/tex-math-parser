@@ -23,6 +23,7 @@ export default defineConfig({
             formats: ['es', 'umd'],
             fileName: (format) => `tex-math-parser.${format}.js`
         },
-        minify: 'esbuild'
+        minify: 'esbuild',
+        sourcemap: true,
     }
 })
